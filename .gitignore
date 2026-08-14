@@ -1,0 +1,17 @@
+# Python virtual environment
+.venv/
+
+# dbt generated files
+target/
+logs/
+
+# DuckDB local database
+*.duckdb
+*.duckdb.wal
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
