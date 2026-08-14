@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    description: Raw operational data loaded into DuckDB for analytics transformation.
+
+    tables:
+      - name: customers
+        description: Raw customer records from the source system.
+
+        columns:
+          - name: customer_id
+            description: Unique identifier for each customer.
+            data_tests:
+              - not_null
+              - unique
+
+          - name: customer_name
+            description: Customer full name.
+            data_tests:
+              - not_null
+
+          - name: customer_status
+            description: Current customer account status.
+            data_tests:
+              - not_null

@@ -1,5 +1,9 @@
 select
-    1 as customer_id,
-    'Emily' as customer_name,
-    'Dublin' as city,
-    'active' as customer_status
+    customer_id,
+    customer_name,
+    email,
+    city,
+    signup_date,
+    customer_status
+
+from {{ source('raw', 'customers') }}
