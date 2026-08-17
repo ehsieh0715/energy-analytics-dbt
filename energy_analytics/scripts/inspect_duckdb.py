@@ -1,0 +1,269 @@
+import argparse
+import sys
+
+import duckdb
+
+
+DB_PATH = "dev.duckdb"
+
+ALLOWED_RELATIONS = {
+    "meter_readings",
+    "stg_meter_readings",
+    "int_daily_consumption",
+    "int_customer_daily_consumption",
+    "fct_meter_readings",
+    "fct_energy_consumption",
+    "dim_customers",
+    "dim_meters",
+}
+
+ALLOWED_COLUMNS = {
+    "meter_readings": {"reading_id", "meter_id"},
+    "fct_meter_readings": {"reading_id", "meter_id"},
+    "dim_customers": {"customer_id"},
+    "dim_meters": {"meter_id", "customer_id"},
+    "fct_energy_consumption": {"meter_id", "customer_id", "reading_date"},
+}
+
+def validate_relation(table_name):
+    if table_name not in ALLOWED_RELATIONS:
+        raise ValueError(
+            f"Unsupported relation: {table_name}"
+        )
+
+
+def validate_column(table_name, column_name):
+    validate_relation(table_name)
+
+    allowed_columns = ALLOWED_COLUMNS.get(table_name, set())
+
+    if column_name not in allowed_columns:
+        raise ValueError(
+            f"Unsupported column '{column_name}' for relation '{table_name}'"
+        )
+
+
+def show_tables(con):
+    """List all tables and views in the main schema."""
+    con.sql("""
+        select
+            table_name,
+            table_type
+        from information_schema.tables
+        where table_schema = 'main'
+        order by table_type, table_name
+    """).show()
+
+
+def show_count(con, table_name):
+    validate_relation(table_name)
+
+    con.sql(f"""
+        select
+            count(*) as row_count
+        from {table_name}
+    """).show()
+
+
+def show_readings(con, limit):
+    """Show the latest meter readings."""
+    
+    if limit <= 0:
+        raise ValueError("Limit must be greater than 0.")
+
+    con.sql(f"""
+        select
+            reading_id,
+            meter_id,
+            reading_timestamp,
+            consumption_kwh,
+            reading_type
+        from fct_meter_readings
+        order by reading_timestamp desc
+        limit {limit}
+    """).show()
+
+
+def show_reading(con, reading_id):
+    """Find one reading in both the raw source and incremental fact."""
+
+    print(f"\n=== Raw source: {reading_id} ===")
+
+    con.sql("""
+        select
+            reading_id,
+            meter_id,
+            reading_timestamp,
+            consumption_kwh,
+            reading_type
+        from meter_readings
+        where reading_id = $reading_id
+    """, params={"reading_id": reading_id}).show()
+
+    print(f"\n=== Incremental fact: {reading_id} ===")
+
+    con.sql("""
+        select
+            reading_id,
+            meter_id,
+            reading_timestamp,
+            consumption_kwh,
+            reading_type
+        from fct_meter_readings
+        where reading_id = $reading_id
+    """, params={"reading_id": reading_id}).show()
+
+
+def show_max_timestamp(con):
+    """Compare the latest timestamps in source and fact."""
+    con.sql("""
+        select
+            'raw meter_readings' as relation,
+            max(reading_timestamp) as max_reading_timestamp
+        from meter_readings
+
+        union all
+
+        select
+            'fct_meter_readings' as relation,
+            max(reading_timestamp) as max_reading_timestamp
+        from fct_meter_readings
+    """).show()
+
+
+def show_daily(con, limit):
+    """Show daily meter consumption."""
+    if limit <= 0:
+        raise ValueError("Limit must be greater than 0.")
+
+    con.sql(f"""
+        select
+            meter_id,
+            reading_date,
+            total_consumption_kwh,
+            reading_count
+        from int_daily_consumption
+        order by reading_date desc, meter_id
+        limit {limit}
+    """).show()
+
+
+def show_duplicates(con, table_name, column_name):
+    validate_column(table_name, column_name)
+
+    con.sql(f"""
+        select
+            {column_name},
+            count(*) as row_count
+        from {table_name}
+        group by {column_name}
+        having count(*) > 1
+        order by row_count desc
+    """).show()
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        description="Inspect the local energy analytics DuckDB database."
+    )
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True
+    )
+
+    subparsers.add_parser(
+        "tables",
+        help="List tables and views."
+    )
+
+    count_parser = subparsers.add_parser(
+        "count",
+        help="Count rows in a relation."
+    )
+    count_parser.add_argument("table")
+
+    readings_parser = subparsers.add_parser(
+        "readings",
+        help="Show latest meter readings."
+    )
+    readings_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10
+    )
+
+    reading_parser = subparsers.add_parser(
+        "reading",
+        help="Find a reading in both raw source and incremental fact."
+    )
+    reading_parser.add_argument("reading_id")
+
+    subparsers.add_parser(
+        "max-timestamp",
+        help="Compare latest source and fact timestamps."
+    )
+
+    daily_parser = subparsers.add_parser(
+        "daily",
+        help="Show daily consumption."
+    )
+    daily_parser.add_argument(
+        "--limit",
+        type=int,
+        default=20
+    )
+
+    duplicate_parser = subparsers.add_parser(
+        "duplicates",
+        help="Check a column for duplicate values."
+    )
+    duplicate_parser.add_argument("table")
+    duplicate_parser.add_argument("column")
+
+    return parser
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        con = duckdb.connect(DB_PATH, read_only=True)
+
+        if args.command == "tables":
+            show_tables(con)
+
+        elif args.command == "count":
+            show_count(con, args.table)
+
+        elif args.command == "readings":
+            show_readings(con, args.limit)
+
+        elif args.command == "reading":
+            show_reading(con, args.reading_id)
+
+        elif args.command == "max-timestamp":
+            show_max_timestamp(con)
+
+        elif args.command == "daily":
+            show_daily(con, args.limit)
+
+        elif args.command == "duplicates":
+            show_duplicates(
+                con,
+                args.table,
+                args.column
+            )
+
+    except duckdb.Error as error:
+        print(f"DuckDB error: {error}", file=sys.stderr)
+        sys.exit(1)
+
+    finally:
+        if "con" in locals():
+            con.close()
+
+
+if __name__ == "__main__":
+    main()
