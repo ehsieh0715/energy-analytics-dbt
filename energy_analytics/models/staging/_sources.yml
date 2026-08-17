@@ -13,15 +13,48 @@ sources:
           - name: customer_id
             description: Unique identifier for each customer.
             data_tests:
-              - not_null
               - unique
+              - not_null
 
-          - name: customer_name
-            description: Customer full name.
+      - name: meters
+        description: Raw meter records associated with energy customers.
+
+        columns:
+          - name: meter_id
+            description: Unique identifier for each meter.
+            data_tests:
+              - unique
+              - not_null
+
+          - name: customer_id
+            description: Customer associated with the meter.
             data_tests:
               - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'customers')
+                    field: customer_id
 
-          - name: customer_status
-            description: Current customer account status.
+      - name: meter_readings
+        description: Raw energy consumption readings received from meters.
+
+        columns:
+          - name: reading_id
+            description: Unique identifier for each meter reading.
+            data_tests:
+              - unique
+              - not_null
+
+          - name: meter_id
+            description: Meter associated with the reading.
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'meters')
+                    field: meter_id
+
+          - name: consumption_kwh
+            description: Energy consumed in kilowatt-hours.
             data_tests:
               - not_null

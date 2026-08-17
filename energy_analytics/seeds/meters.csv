@@ -1,0 +1,6 @@
+meter_id,customer_id,meter_type,installation_date,meter_status
+M001,1,electricity,2024-06-15,active
+M002,2,electricity,2024-08-21,active
+M003,3,electricity,2024-09-10,inactive
+M004,4,electricity,2025-01-05,active
+M005,5,electricity,2025-02-17,active
