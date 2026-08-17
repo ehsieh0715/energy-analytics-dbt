@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_daily_consumption
-    description: Aggregates meter readings to daily consumption by meter.
+    description: Aggregates interval meter readings to daily consumption by meter.
 
     columns:
       - name: meter_id
@@ -11,16 +11,40 @@ models:
           - not_null
 
       - name: reading_date
-        description: Calendar date of the aggregated meter readings.
+        description: Calendar date of the aggregated readings.
         data_tests:
           - not_null
 
       - name: total_consumption_kwh
-        description: Total energy consumption recorded for the meter on the day.
+        description: Total energy consumed by the meter on the day.
         data_tests:
           - not_null
 
       - name: reading_count
-        description: Number of meter readings included in the daily aggregation.
+        description: Number of interval readings included in the daily aggregation.
+        data_tests:
+          - not_null
+
+  - name: int_customer_daily_consumption
+    description: Daily energy consumption enriched with customer and meter attributes.
+
+    columns:
+      - name: customer_id
+        description: Unique identifier for the customer.
+        data_tests:
+          - not_null
+
+      - name: meter_id
+        description: Unique identifier for the meter.
+        data_tests:
+          - not_null
+
+      - name: reading_date
+        description: Consumption date.
+        data_tests:
+          - not_null
+
+      - name: total_consumption_kwh
+        description: Daily energy consumption in kilowatt-hours.
         data_tests:
           - not_null
