@@ -11,10 +11,12 @@ ALLOWED_RELATIONS = {
     "stg_meter_readings",
     "int_daily_consumption",
     "int_customer_daily_consumption",
-    "fct_meter_readings",
-    "fct_energy_consumption",
     "dim_customers",
     "dim_meters",
+    "dim_customer_history",
+    "fct_energy_consumption",
+    "fct_meter_readings",
+    "main_snapshots.customer_snapshot",
 }
 
 ALLOWED_COLUMNS = {
@@ -24,6 +26,7 @@ ALLOWED_COLUMNS = {
     "dim_meters": {"meter_id", "customer_id"},
     "fct_energy_consumption": {"meter_id", "customer_id", "reading_date"},
 }
+
 
 def validate_relation(table_name):
     if table_name not in ALLOWED_RELATIONS:
@@ -69,7 +72,6 @@ def show_count(con, table_name):
 
 def show_readings(con, limit):
     """Show the latest meter readings."""
-    
     if limit <= 0:
         raise ValueError("Limit must be greater than 0.")
 
@@ -180,6 +182,39 @@ def show_customer_snapshot(con):
     """).show()
 
 
+def show_relation_info(con, table_name):
+    """Show basic metadata, row count, and schema for a relation."""
+    validate_relation(table_name)
+
+    print(f"\n=== Relation: {table_name} ===")
+
+    con.sql(f"""
+        select
+            count(*) as row_count
+        from {table_name}
+    """).show()
+
+    print("\n=== Columns ===")
+
+    con.sql(f"""
+        describe {table_name}
+    """).show()
+
+
+def preview_relation(con, table_name, limit):
+    """Preview rows from a relation."""
+    validate_relation(table_name)
+
+    if limit <= 0:
+        raise ValueError("Limit must be greater than 0.")
+
+    con.sql(f"""
+        select *
+        from {table_name}
+        limit {limit}
+    """).show()
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Inspect the local energy analytics DuckDB database."
@@ -221,7 +256,7 @@ def build_parser():
         "max-timestamp",
         help="Compare latest source and fact timestamps."
     )
-    
+
     subparsers.add_parser(
         "customer-history",
         help="Show customer snapshot history."
@@ -243,6 +278,25 @@ def build_parser():
     )
     duplicate_parser.add_argument("table")
     duplicate_parser.add_argument("column")
+
+    info_parser = subparsers.add_parser(
+        "info",
+        help="Show row count and column information for a relation."
+    )
+    info_parser.add_argument("table")
+
+    preview_parser = subparsers.add_parser(
+        "preview",
+        help="Preview rows from a table or view."
+    )
+
+    preview_parser.add_argument("table")
+
+    preview_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10
+    )
 
     return parser
 
@@ -281,6 +335,12 @@ def main():
 
         elif args.command == "customer-history":
             show_customer_snapshot(con)
+
+        elif args.command == "info":
+            show_relation_info(con, args.table)
+
+        elif args.command == "preview":
+            preview_relation(con, args.table, args.limit)
 
     except duckdb.Error as error:
         print(f"DuckDB error: {error}", file=sys.stderr)
