@@ -1,0 +1,87 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Cleaned and standardized customer records.
+
+    columns:
+      - name: customer_id
+        description: Unique identifier for each customer.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_status
+        description: Standardized customer account status.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - active
+                  - inactive
+
+  - name: stg_meters
+    description: Cleaned and standardized meter records.
+
+    columns:
+      - name: meter_id
+        description: Unique identifier for each meter.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer associated with the meter.
+        data_tests:
+          - not_null
+
+      - name: meter_status
+        description: Standardized meter status.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - active
+                  - inactive
+
+      - name: meter_type
+        description: Standardized meter type.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - electricity
+
+  - name: stg_meter_readings
+    description: Cleaned interval-level meter consumption readings.
+
+    columns:
+      - name: reading_id
+        description: Unique identifier for each meter reading.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: meter_id
+        description: Meter associated with the reading.
+        data_tests:
+          - not_null
+
+      - name: reading_timestamp
+        description: Timestamp of the interval reading.
+        data_tests:
+          - not_null
+
+      - name: consumption_kwh
+        description: Energy consumed during the reporting interval.
+        data_tests:
+          - not_null
+
+      - name: reading_type
+        description: Standardized reading type.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - actual
+                  - estimated

@@ -4,6 +4,6 @@ select
     email,
     city,
     signup_date,
-    customer_status
+    {{ normalize_text('customer_status') }} as customer_status
 
 from {{ source('raw', 'customers') }}

@@ -7,7 +7,11 @@ import duckdb
 DB_PATH = "dev.duckdb"
 
 ALLOWED_RELATIONS = {
+    "customers",
+    "meters",
     "meter_readings",
+    "stg_customers",
+    "stg_meters",
     "stg_meter_readings",
     "int_daily_consumption",
     "int_customer_daily_consumption",
@@ -19,30 +23,11 @@ ALLOWED_RELATIONS = {
     "main_snapshots.customer_snapshot",
 }
 
-ALLOWED_COLUMNS = {
-    "meter_readings": {"reading_id", "meter_id"},
-    "fct_meter_readings": {"reading_id", "meter_id"},
-    "dim_customers": {"customer_id"},
-    "dim_meters": {"meter_id", "customer_id"},
-    "fct_energy_consumption": {"meter_id", "customer_id", "reading_date"},
-}
-
 
 def validate_relation(table_name):
     if table_name not in ALLOWED_RELATIONS:
         raise ValueError(
             f"Unsupported relation: {table_name}"
-        )
-
-
-def validate_column(table_name, column_name):
-    validate_relation(table_name)
-
-    allowed_columns = ALLOWED_COLUMNS.get(table_name, set())
-
-    if column_name not in allowed_columns:
-        raise ValueError(
-            f"Unsupported column '{column_name}' for relation '{table_name}'"
         )
 
 
@@ -149,20 +134,6 @@ def show_daily(con, limit):
         from int_daily_consumption
         order by reading_date desc, meter_id
         limit {limit}
-    """).show()
-
-
-def show_duplicates(con, table_name, column_name):
-    validate_column(table_name, column_name)
-
-    con.sql(f"""
-        select
-            {column_name},
-            count(*) as row_count
-        from {table_name}
-        group by {column_name}
-        having count(*) > 1
-        order by row_count desc
     """).show()
 
 
