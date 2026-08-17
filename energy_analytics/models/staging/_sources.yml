@@ -36,7 +36,7 @@ sources:
                     field: customer_id
 
       - name: meter_readings
-        description: Raw energy consumption readings received from meters.
+        description: Raw interval energy consumption readings received from meters. Each row represents energy consumed during one reporting interval.
 
         columns:
           - name: reading_id
@@ -55,6 +55,6 @@ sources:
                     field: meter_id
 
           - name: consumption_kwh
-            description: Energy consumed in kilowatt-hours.
+            description: Energy consumed during the reporting interval, measured in kilowatt-hours.
             data_tests:
               - not_null
