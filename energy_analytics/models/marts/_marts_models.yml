@@ -61,3 +61,34 @@ models:
         description: Total energy consumed during the day in kilowatt-hours.
         data_tests:
           - not_null
+
+  - name: fct_meter_readings
+    description: >
+      Incremental fact table containing interval-level energy consumption
+      readings. Each row represents one meter reading interval.
+
+    columns:
+      - name: reading_id
+        description: Unique identifier for the meter reading.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: meter_id
+        description: Meter associated with the reading.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_meters')
+                field: meter_id
+
+      - name: reading_timestamp
+        description: Timestamp of the interval reading.
+        data_tests:
+          - not_null
+
+      - name: consumption_kwh
+        description: Energy consumed during the reporting interval.
+        data_tests:
+          - not_null
