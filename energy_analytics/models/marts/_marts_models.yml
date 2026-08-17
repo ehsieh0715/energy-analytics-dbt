@@ -61,6 +61,7 @@ models:
         description: Total energy consumed during the day in kilowatt-hours.
         data_tests:
           - not_null
+          - non_negative
 
   - name: fct_meter_readings
     description: >
@@ -92,6 +93,7 @@ models:
         description: Energy consumed during the reporting interval.
         data_tests:
           - not_null
+          - non_negative
 
   - name: dim_customer_history
     description: >

@@ -76,6 +76,7 @@ models:
         description: Energy consumed during the reporting interval.
         data_tests:
           - not_null
+          - non_negative
 
       - name: reading_type
         description: Standardized reading type.
