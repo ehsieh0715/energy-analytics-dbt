@@ -1,0 +1,15 @@
+snapshots:
+  - name: customer_snapshot
+    relation: source('raw', 'customers')
+
+    config:
+      schema: snapshots
+      unique_key: customer_id
+
+      strategy: check
+
+      check_cols:
+        - customer_name
+        - email
+        - city
+        - customer_status

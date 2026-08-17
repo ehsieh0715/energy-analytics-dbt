@@ -44,14 +44,16 @@ def validate_column(table_name, column_name):
 
 
 def show_tables(con):
-    """List all tables and views in the main schema."""
+    """List all user tables and views."""
+
     con.sql("""
         select
+            table_schema,
             table_name,
             table_type
         from information_schema.tables
-        where table_schema = 'main'
-        order by table_type, table_name
+        where table_schema not in ('information_schema', 'pg_catalog')
+        order by table_schema, table_name
     """).show()
 
 
@@ -162,6 +164,22 @@ def show_duplicates(con, table_name, column_name):
     """).show()
 
 
+def show_customer_snapshot(con):
+    """Show customer history captured by dbt snapshot."""
+
+    con.sql("""
+        select
+            customer_id,
+            customer_name,
+            city,
+            customer_status,
+            dbt_valid_from,
+            dbt_valid_to
+        from main_snapshots.customer_snapshot
+        order by customer_id, dbt_valid_from
+    """).show()
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Inspect the local energy analytics DuckDB database."
@@ -202,6 +220,11 @@ def build_parser():
     subparsers.add_parser(
         "max-timestamp",
         help="Compare latest source and fact timestamps."
+    )
+    
+    subparsers.add_parser(
+        "customer-history",
+        help="Show customer snapshot history."
     )
 
     daily_parser = subparsers.add_parser(
@@ -255,6 +278,9 @@ def main():
                 args.table,
                 args.column
             )
+
+        elif args.command == "customer-history":
+            show_customer_snapshot(con)
 
     except duckdb.Error as error:
         print(f"DuckDB error: {error}", file=sys.stderr)
