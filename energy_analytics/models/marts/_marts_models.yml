@@ -25,6 +25,10 @@ models:
         description: Customer associated with the meter.
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
 
   - name: fct_energy_consumption
     description: Daily energy consumption fact table at meter-day grain.
@@ -34,11 +38,19 @@ models:
         description: Customer associated with the energy consumption.
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
 
       - name: meter_id
         description: Meter associated with the energy consumption.
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_meters')
+                field: meter_id
 
       - name: reading_date
         description: Date of energy consumption.
