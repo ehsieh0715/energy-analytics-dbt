@@ -92,3 +92,33 @@ models:
         description: Energy consumed during the reporting interval.
         data_tests:
           - not_null
+
+  - name: dim_customer_history
+    description: >
+      Type 2 slowly changing customer dimension containing historical
+      versions of customer attributes.
+
+    columns:
+      - name: customer_version_id
+        description: Unique identifier for a historical customer version.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Business identifier for the customer.
+        data_tests:
+          - not_null
+
+      - name: valid_from
+        description: Timestamp from which this customer version became valid.
+        data_tests:
+          - not_null
+
+      - name: valid_to
+        description: Timestamp until which this customer version was valid. Null indicates the current version.
+
+      - name: is_current
+        description: Indicates whether this is the customer's current version.
+        data_tests:
+          - not_null
