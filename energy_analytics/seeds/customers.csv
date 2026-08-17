@@ -1,5 +1,5 @@
 customer_id,customer_name,email,city,signup_date,customer_status
-1,Emily Hsieh,emily@example.com,Dublin,2025-01-15,active
+1,Emily Hsieh,emily@example.com,Cork,2025-01-15,active
 2,John Murphy,john@example.com,Cork,2025-02-03,active
 3,Sarah Kelly,sarah@example.com,Galway,2025-03-18,inactive
 4,Michael Byrne,michael@example.com,Dublin,2025-04-09,active
