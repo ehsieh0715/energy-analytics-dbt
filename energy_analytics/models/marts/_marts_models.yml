@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: Customer dimension containing one row per customer.
+
+    columns:
+      - name: customer_id
+        description: Primary key for the customer dimension.
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_meters
+    description: Meter dimension containing one row per meter.
+
+    columns:
+      - name: meter_id
+        description: Primary key for the meter dimension.
+        data_tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer associated with the meter.
+        data_tests:
+          - not_null
+
+  - name: fct_energy_consumption
+    description: Daily energy consumption fact table at meter-day grain.
+
+    columns:
+      - name: customer_id
+        description: Customer associated with the energy consumption.
+        data_tests:
+          - not_null
+
+      - name: meter_id
+        description: Meter associated with the energy consumption.
+        data_tests:
+          - not_null
+
+      - name: reading_date
+        description: Date of energy consumption.
+        data_tests:
+          - not_null
+
+      - name: total_consumption_kwh
+        description: Total energy consumed during the day in kilowatt-hours.
+        data_tests:
+          - not_null
