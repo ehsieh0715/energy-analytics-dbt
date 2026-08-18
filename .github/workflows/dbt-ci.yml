@@ -37,3 +37,29 @@ jobs:
 
       - name: Build dbt project
         run: dbt build
+
+      - name: Inspect DuckDB tables
+        if: always()
+        run: |
+          python - <<'PY'
+          import duckdb
+
+          con = duckdb.connect("dev.duckdb")
+
+          print("=== Schemas ===")
+          print(con.execute("""
+              select schema_name
+              from information_schema.schemata
+              order by schema_name
+          """).fetchall())
+
+          print("=== Tables ===")
+          print(con.execute("""
+              select
+                  table_catalog,
+                  table_schema,
+                  table_name
+              from information_schema.tables
+              order by table_schema, table_name
+          """).fetchall())
+          PY
