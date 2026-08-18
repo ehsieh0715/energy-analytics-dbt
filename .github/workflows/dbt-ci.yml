@@ -1,0 +1,44 @@
+name: dbt CI
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: energy_analytics
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r ../requirements.txt
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Validate dbt connection
+        run: dbt debug
+      
+      - name: Load mock source data
+        run: dbt seed
+
+      - name: Build dbt project
+        run: dbt build
