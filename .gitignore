@@ -16,4 +16,8 @@ logs/
 __pycache__/
 *.pyc
 
+# dbt generated files
 .user.yml
+target/
+dbt_packages/
+logs/
