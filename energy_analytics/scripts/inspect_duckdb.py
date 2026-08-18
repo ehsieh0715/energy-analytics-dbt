@@ -186,6 +186,34 @@ def preview_relation(con, table_name, limit):
     """).show()
 
 
+def show_test_failures(con, test_name):
+    schema_name = "main_dbt_test__audit"
+
+    # Test names become SQL identifiers here, so only allow safe characters.
+    if not test_name.replace("_", "").isalnum():
+        raise ValueError(
+            "Invalid test name. Only letters, numbers, and underscores are allowed."
+        )
+
+    table_name = f"{schema_name}.{test_name}"
+
+    print(f"\n=== Test failures: {test_name} ===")
+
+    try:
+        result = con.sql(f"""
+            select *
+            from {table_name}
+        """)
+
+        print(result)
+
+    except Exception as exc:
+        print(f"Could not read failure table: {table_name}")
+        print("Run the test with --store-failures first:")
+        print(f"  dbt test --select {test_name} --store-failures")
+        print(f"\nDuckDB error: {exc}")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Inspect the local energy analytics DuckDB database."
@@ -269,6 +297,16 @@ def build_parser():
         default=10
     )
 
+    failures_parser = subparsers.add_parser(
+        "failures",
+        help="Show stored failure rows for a dbt test"
+    )
+
+    failures_parser.add_argument(
+        "test_name",
+        help="Name of the dbt test"
+    )
+
     return parser
 
 
@@ -312,6 +350,9 @@ def main():
 
         elif args.command == "preview":
             preview_relation(con, args.table, args.limit)
+            
+        elif args.command == "failures":
+            show_test_failures(con, args.test_name)
 
     except duckdb.Error as error:
         print(f"DuckDB error: {error}", file=sys.stderr)
