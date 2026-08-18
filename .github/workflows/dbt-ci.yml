@@ -34,6 +34,9 @@ jobs:
 
       - name: Validate dbt connection
         run: dbt debug
+      
+      - name: Load mock source data
+        run: dbt seed
 
       - name: Build dbt project
         run: dbt build
