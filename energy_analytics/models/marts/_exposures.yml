@@ -1,0 +1,20 @@
+version: 2
+
+exposures:
+  - name: energy_consumption_dashboard
+    label: Energy Consumption Dashboard
+    type: dashboard
+    maturity: medium
+
+    description: >
+      Example downstream analytics dashboard for monitoring customer
+      energy consumption, meter activity, and daily usage trends.
+
+    depends_on:
+      - ref('dim_customers')
+      - ref('dim_meters')
+      - ref('fct_energy_consumption')
+
+    owner:
+      name: Emily Hsieh
+      email: ehsieh0715@gmail.com
