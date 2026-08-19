@@ -1,24 +1,8 @@
 # Energy Analytics Engineering with dbt
 
-**Tech Stack:** dbt · DuckDB · SQL · Python · GitHub Actions
-
+![dbt](https://img.shields.io/badge/dbt-Dimensional%20Modelling%20%7C%20Testing%20%7C%20Lineage-FF694B?logo=dbt&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-Local%20Warehouse-FFF000?logo=duckdb&logoColor=black)
 [![dbt CI](https://github.com/ehsieh0715/energy-analytics-dbt/actions/workflows/dbt-ci.yml/badge.svg)](https://github.com/ehsieh0715/energy-analytics-dbt/actions/workflows/dbt-ci.yml)
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Data Model](#data-model)
-- [Example Lineage](#example-lineage)
-- [Key dbt Features](#key-dbt-features)
-- [Data Quality & Monitoring](#data-quality--monitoring)
-- [Incremental Processing](#incremental-processing)
-- [Historical Tracking](#historical-tracking)
-- [CI](#ci)
-- [Project Structure](#project-structure)
-- [How to Run](#how-to-run)
-- [Limitations / Production Considerations](#limitations--production-considerations)
-
 
 ## Overview
 
@@ -27,6 +11,25 @@ End-to-end analytics engineering project using dbt and DuckDB to transform raw e
 The project simulates an energy supplier data platform with customer, meter, and interval consumption data. CSV files are loaded with dbt seeds for local reproducibility, then registered as `raw` sources to simulate upstream tables that, in a production environment, would be populated by external ingestion pipelines.
 
 The raw sources are transformed through staging and intermediate layers into dimensional marts suitable for downstream BI and analytics.
+
+![dbt project lineage](docs/images/dbt-lineage.png)
+
+*Generated dbt lineage showing dependencies from raw sources through transformation layers to downstream analytics models.*
+
+
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Data Model](#data-model)
+- [Transformation Lineage](#transformation-lineage)
+- [Key dbt Features](#key-dbt-features)
+- [Data Quality & Monitoring](#data-quality--monitoring)
+- [Incremental Processing](#incremental-processing)
+- [Historical Tracking](#historical-tracking)
+- [CI](#ci)
+- [Project Structure](#project-structure)
+- [How to Run](#how-to-run)
+- [Limitations / Production Considerations](#limitations--production-considerations)
 
 
 ## Architecture
@@ -69,7 +72,7 @@ The mart layer provides dimensional and fact models designed for downstream anal
 The dimensional marts separate descriptive business entities from measurable events, providing reusable datasets for downstream BI applications.
 
 
-## Example Lineage
+## Transformation Lineage
 A typical transformation path for energy consumption analytics is:
 
 ```mermaid
@@ -89,11 +92,6 @@ flowchart LR
 ```
 
 dbt resolves these dependencies through `source()` and `ref()`, creating an explicit DAG that supports lineage tracking, testing, documentation, and impact analysis.
-
-### dbt Documentation Lineage
-The generated dbt documentation provides an interactive view of model dependencies from raw sources through transformation layers to downstream exposures.
-
-![dbt Docs lineage](docs/images/dbt-lineage.png)
 
 
 ## Key dbt Features
